@@ -10,9 +10,5 @@ class RedisConfig
 
     public $dbId = 0;
 
-    public $isAuthEnabled = false;
-
-    public $username = 'root';
-
     public $password = '';
 }

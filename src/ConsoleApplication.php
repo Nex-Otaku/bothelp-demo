@@ -2,9 +2,11 @@
 
 namespace App;
 
+use App\Actions\CheckRedis;
 use App\Actions\CreateEvent;
 use App\Components\Console\Console;
 use App\Components\Queue\Queue;
+use App\Components\Redis\RedisConnection;
 
 class ConsoleApplication
 {
@@ -44,6 +46,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'check-redis') {
+            $this->checkRedis();
+
+            return;
+        }
+
         echo "Not found action: {$route}\n";
     }
 
@@ -51,6 +59,8 @@ class ConsoleApplication
     {
         echo "Доступные действия:\n";
         echo "\thello\n";
+        echo "\tcreate-event\n";
+        echo "\tcheck-redis\n";
     }
 
     private function createEvent(): void
@@ -61,5 +71,15 @@ class ConsoleApplication
     private function getQueue(): Queue
     {
         return new Queue();
+    }
+
+    private function checkRedis(): void
+    {
+        (new CheckRedis($this->getRedis()))->execute();
+    }
+
+    private function getRedis(): RedisConnection
+    {
+        return new RedisConnection($this->redisConfig);
     }
 }

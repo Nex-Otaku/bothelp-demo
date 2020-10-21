@@ -13,3 +13,7 @@ hello:
 # Создать одно событие
 create-event:
 	./bin/app create-event
+
+# Проверить Redis
+check-redis:
+	./bin/app check-redis
