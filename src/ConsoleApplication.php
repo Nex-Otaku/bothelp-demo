@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Actions\CheckRedis;
+use App\Actions\ClearEvents;
 use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Actions\GenerateManyEvents;
@@ -67,6 +68,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'clear-events') {
+            $this->clearEvents();
+
+            return;
+        }
+
         echo "Not found action: {$route}\n";
     }
 
@@ -78,6 +85,7 @@ class ConsoleApplication
         echo "\tconsume-event\n";
         echo "\tcheck-redis\n";
         echo "\tgenerate-many-events\n";
+        echo "\tclear-events\n";
     }
 
     private function createEvent(): void
@@ -113,5 +121,10 @@ class ConsoleApplication
     private function getEventGenerator(): EventGenerator
     {
         return new EventGenerator($this->getQueue());
+    }
+
+    private function clearEvents(): void
+    {
+        (new ClearEvents($this->getQueue()))->execute();
     }
 }

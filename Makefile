@@ -27,3 +27,7 @@ check-redis:
 generate-many-events:
 	./bin/app generate-many-events
 
+# Очистить очередь
+clear-events:
+	./bin/app clear-events
+

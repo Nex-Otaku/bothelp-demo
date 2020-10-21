@@ -36,4 +36,9 @@ class Queue
     {
         return $this->redisConnection->getListLength(self::KEY_EVENT_QUEUE);
     }
+
+    public function clear(): void
+    {
+        $this->redisConnection->delete(self::KEY_EVENT_QUEUE);
+    }
 }
