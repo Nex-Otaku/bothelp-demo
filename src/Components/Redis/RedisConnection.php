@@ -87,4 +87,9 @@ class RedisConnection
     {
         return $this->getClient()->rpop($key);
     }
+
+    public function getListLength(string $key): int
+    {
+        return $this->getClient()->llen($key);
+    }
 }

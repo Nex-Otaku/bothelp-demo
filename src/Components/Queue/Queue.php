@@ -31,4 +31,9 @@ class Queue
 
         return Event::fromString($item);
     }
+
+    public function getLength(): int
+    {
+        return $this->redisConnection->getListLength(self::KEY_EVENT_QUEUE);
+    }
 }

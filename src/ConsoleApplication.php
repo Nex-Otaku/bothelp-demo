@@ -5,7 +5,9 @@ namespace App;
 use App\Actions\CheckRedis;
 use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
+use App\Actions\GenerateManyEvents;
 use App\Components\Console\Console;
+use App\Components\EventGenerator\EventGenerator;
 use App\Components\Queue\Queue;
 use App\Components\Redis\RedisConnection;
 
@@ -59,6 +61,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'generate-many-events') {
+            $this->generateManyEvents();
+
+            return;
+        }
+
         echo "Not found action: {$route}\n";
     }
 
@@ -67,7 +75,9 @@ class ConsoleApplication
         echo "Доступные действия:\n";
         echo "\thello\n";
         echo "\tcreate-event\n";
+        echo "\tconsume-event\n";
         echo "\tcheck-redis\n";
+        echo "\tgenerate-many-events\n";
     }
 
     private function createEvent(): void
@@ -93,5 +103,15 @@ class ConsoleApplication
     private function consumeEvent(): void
     {
         (new ConsumeEvent($this->getQueue()))->execute();
+    }
+
+    private function generateManyEvents(): void
+    {
+        (new GenerateManyEvents($this->getEventGenerator(), $this->getQueue()))->execute();
+    }
+
+    private function getEventGenerator(): EventGenerator
+    {
+        return new EventGenerator($this->getQueue());
     }
 }

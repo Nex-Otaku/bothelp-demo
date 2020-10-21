@@ -21,3 +21,9 @@ consume-event:
 # Проверить Redis
 check-redis:
 	./bin/app check-redis
+
+
+# Сгенерировать 10К событий
+generate-many-events:
+	./bin/app generate-many-events
+
