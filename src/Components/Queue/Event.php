@@ -2,6 +2,8 @@
 
 namespace App\Components\Queue;
 
+use App\Helpers\Json;
+
 class Event
 {
     /** @var int */
@@ -13,7 +15,7 @@ class Event
     public function __construct(int $accountId, int $eventId)
     {
         $this->accountId = $accountId;
-        $this->eventId = $eventId;
+        $this->eventId   = $eventId;
     }
 
     public function getEventId(): int
@@ -24,5 +26,15 @@ class Event
     public function getAccountId(): int
     {
         return $this->accountId;
+    }
+
+    public function toString(): string
+    {
+        return (new Json())->encode(
+            [
+                'eventId'   => $this->eventId,
+                'accountId' => $this->accountId,
+            ]
+        );
     }
 }

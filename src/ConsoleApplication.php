@@ -70,7 +70,7 @@ class ConsoleApplication
 
     private function getQueue(): Queue
     {
-        return new Queue();
+        return new Queue($this->getRedis());
     }
 
     private function checkRedis(): void

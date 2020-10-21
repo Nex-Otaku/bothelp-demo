@@ -23,6 +23,7 @@ class RedisConnection
     public function get(string $key): ?string
     {
         $result = $this->getClient()->get($key);
+
         if (!is_string($result)) {
             return null;
         }
@@ -53,7 +54,17 @@ class RedisConnection
     {
         $message = 'Hello!';
         $answer = $this->getClient()->ping($message);
+
         return $answer === $message;
+    }
+
+    /**
+     * @param string   $key
+     * @param string[] $values
+     */
+    public function appendToList(string $key, array $values): void
+    {
+        $this->getClient()->rpush($key, $values);
     }
 
     private function getClient(): Client
