@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+use App\RedisConfig;
+use App\ConsoleApplication;
+
+// PSR-4 Autoloader.
+require_once __DIR__ . '/../vendor/autoload.php';
+
+try {
+    $application = new ConsoleApplication(new RedisConfig());
+    $exitCode = $application->run();
+} catch (\Exception $exception) {
+    echo (string)$exception . PHP_EOL;
+    $exitCode = $exception->getCode();
+}
+
+exit($exitCode);
