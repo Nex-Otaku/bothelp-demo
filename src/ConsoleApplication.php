@@ -2,7 +2,9 @@
 
 namespace App;
 
+use App\Actions\CreateEvent;
 use App\Components\Console\Console;
+use App\Components\Queue\Queue;
 
 class ConsoleApplication
 {
@@ -36,6 +38,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'create-event') {
+            $this->createEvent();
+
+            return;
+        }
+
         echo "Not found action: {$route}\n";
     }
 
@@ -43,5 +51,15 @@ class ConsoleApplication
     {
         echo "Доступные действия:\n";
         echo "\thello\n";
+    }
+
+    private function createEvent(): void
+    {
+        (new CreateEvent($this->getQueue()))->execute();
+    }
+
+    private function getQueue(): Queue
+    {
+        return new Queue();
     }
 }

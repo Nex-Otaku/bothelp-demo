@@ -9,3 +9,7 @@ install:
 # Hello World
 hello:
 	./bin/app hello
+
+# Создать одно событие
+create-event:
+	./bin/app create-event
