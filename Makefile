@@ -14,6 +14,10 @@ hello:
 create-event:
 	./bin/app create-event
 
+# Извлечь одно событие
+consume-event:
+	./bin/app consume-event
+
 # Проверить Redis
 check-redis:
 	./bin/app check-redis

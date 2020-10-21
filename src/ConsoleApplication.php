@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Actions\CheckRedis;
+use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Components\Console\Console;
 use App\Components\Queue\Queue;
@@ -52,6 +53,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'consume-event') {
+            $this->consumeEvent();
+
+            return;
+        }
+
         echo "Not found action: {$route}\n";
     }
 
@@ -81,5 +88,10 @@ class ConsoleApplication
     private function getRedis(): RedisConnection
     {
         return new RedisConnection($this->redisConfig);
+    }
+
+    private function consumeEvent(): void
+    {
+        (new ConsumeEvent($this->getQueue()))->execute();
     }
 }

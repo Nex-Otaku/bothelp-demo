@@ -7,15 +7,28 @@ use App\Helpers\Json;
 class Event
 {
     /** @var int */
-    private $accountId;
-
-    /** @var int */
     private $eventId;
 
-    public function __construct(int $accountId, int $eventId)
+    /** @var int */
+    private $accountId;
+
+    public function __construct(int $eventId, int $accountId)
     {
-        $this->accountId = $accountId;
         $this->eventId   = $eventId;
+        $this->accountId = $accountId;
+    }
+
+    public static function fromString(string $item): self
+    {
+        $decoded = (new Json())->decode($item);
+
+        if (!is_array($decoded)
+            || !array_key_exists('eventId', $decoded)
+            || !array_key_exists('accountId', $decoded)) {
+            throw new \RuntimeException("Не удалось декодировать элемент: {$item}");
+        }
+
+        return new Event($decoded['eventId'], $decoded['accountId']);
     }
 
     public function getEventId(): int

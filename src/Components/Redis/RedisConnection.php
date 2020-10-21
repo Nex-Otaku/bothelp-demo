@@ -82,4 +82,9 @@ class RedisConnection
 
         return $this->client;
     }
+
+    public function popFromListTail(string $key): ?string
+    {
+        return $this->getClient()->rpop($key);
+    }
 }
