@@ -1,0 +1,13 @@
+{
+    "name": "nex-otaku/bothelp-demo",
+    "description": "Demo App for Bothelp",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Leonid Chernenko",
+            "email": "leonid.chernenko.vrn@yandex.ru"
+        }
+    ],
+    "require": {}
+}
