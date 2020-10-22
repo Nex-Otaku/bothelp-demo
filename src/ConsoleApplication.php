@@ -8,9 +8,12 @@ use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Actions\GenerateEvents;
 use App\Actions\ReadAccountLock;
+use App\Actions\ReadLastProcessedEvent;
 use App\Actions\ResetAccountLock;
+use App\Actions\ResetLastProcessedEvent;
 use App\Actions\RunWorker;
 use App\Actions\SetAccountLock;
+use App\Actions\SetLastProcessedEvent;
 use App\Actions\ShowTail;
 use App\Components\Console\BreakSignalDetector;
 use App\Components\Console\Console;
@@ -118,6 +121,24 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'read-last-event') {
+            $this->readLastEvent();
+
+            return;
+        }
+
+        if ($route === 'set-last-event') {
+            $this->setLastEvent();
+
+            return;
+        }
+
+        if ($route === 'reset-last-event') {
+            $this->resetLastEvent();
+
+            return;
+        }
+
         echo "Действие не найдено: {$route}\n";
     }
 
@@ -135,6 +156,9 @@ class ConsoleApplication
         echo "\tread-account-lock\n";
         echo "\tset-account-lock\n";
         echo "\treset-account-lock\n";
+        echo "\tset-last-event\n";
+        echo "\tread-last-event\n";
+        echo "\treset-last-event\n";
     }
 
     private function createEvent(): void
@@ -220,5 +244,20 @@ class ConsoleApplication
     private function resetAccountLock(): void
     {
         (new ResetAccountLock($this->getQueue()))->execute();
+    }
+
+    private function readLastEvent(): void
+    {
+        (new ReadLastProcessedEvent($this->getQueue()))->execute();
+    }
+
+    private function setLastEvent(): void
+    {
+        (new SetLastProcessedEvent($this->getQueue()))->execute();
+    }
+
+    private function resetLastEvent(): void
+    {
+        (new ResetLastProcessedEvent($this->getQueue()))->execute();
     }
 }

@@ -66,6 +66,7 @@ class Worker
             return;
         }
 
+        $this->setLastProcessedEventId($event);
         $this->processEvent($event);
         $this->releaseLock();
     }
@@ -100,7 +101,13 @@ class Worker
 
     private function canProcessEvent(Event $event): bool
     {
-        return $this->acquireLock($event);
+        $acquired = $this->acquireLock($event);
+
+        if (!$acquired) {
+            return false;
+        }
+
+        return $event->getEventId() > $this->getLastProcessedEventId($event->getAccountId());
     }
 
     private function processEvent(Event $event): void
@@ -160,5 +167,15 @@ class Worker
         }
 
         return $acquired;
+    }
+
+    private function getLastProcessedEventId(int $accountId): int
+    {
+        return $this->queue->getLastProcessedEventId($accountId) ?? 0;
+    }
+
+    private function setLastProcessedEventId(Event $event)
+    {
+        $this->queue->setLastProcessedEventId($event->getAccountId(), $event->getEventId());
     }
 }

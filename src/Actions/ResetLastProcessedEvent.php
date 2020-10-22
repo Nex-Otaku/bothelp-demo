@@ -4,7 +4,7 @@ namespace App\Actions;
 
 use App\Components\Queue\Queue;
 
-class ResetAccountLock
+class ResetLastProcessedEvent
 {
     /** @var Queue */
     private $queue;
@@ -16,8 +16,8 @@ class ResetAccountLock
 
     public function execute(): void
     {
-        $this->queue->resetAccountLock(1);
+        $this->queue->resetLastProcessedEvent(1);
 
-        echo "Блокировка удалена.\n";
+        echo "Очищен ID последнего обработанного события.\n";
     }
 }

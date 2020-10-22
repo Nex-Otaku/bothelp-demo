@@ -51,3 +51,15 @@ set-account-lock:
 reset-account-lock:
 	./bin/app reset-account-lock
 
+# Прочесть ID последнего события
+read-last-event:
+	./bin/app read-last-event
+
+# Установить ID последнего события
+set-last-event:
+	./bin/app set-last-event
+
+# Сбросить ID последнего события
+reset-last-event:
+	./bin/app reset-last-event
+

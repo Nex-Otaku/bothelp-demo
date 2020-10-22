@@ -8,6 +8,7 @@ class Queue
 {
     private const KEY_EVENT_QUEUE        = 'event-queue';
     private const KEY_ACCOUNT_PROCESSING = 'account-processing-';
+    private const KEY_LAST_PROCESSED_EVENT = 'last-processed-event-for-account-';
 
     /** @var RedisConnection */
     private $redisConnection;
@@ -91,5 +92,40 @@ class Queue
     private function getAccountChannelKey(int $accountId): string
     {
         return self::KEY_ACCOUNT_PROCESSING . (string)$accountId;
+    }
+
+    public function getLastProcessedEventId(int $accountId): ?int
+    {
+        $key = $this->getAccountLastEventKey($accountId);
+        $value = $this->redisConnection->get($key);
+
+        if ($value === null) {
+            return null;
+        }
+
+        if (!is_string($value)) {
+            throw new \RuntimeException("Не удалось извлечь данные по ключу \"{$key}\"");
+        }
+
+        if (!ctype_digit($value)) {
+            throw new \RuntimeException("Строка не представляет целое число. Ключ \"{$key}\". Значение: {$value}");
+        }
+
+        return (int)$value;
+    }
+
+    public function setLastProcessedEventId(int $accountId, int $eventId): void
+    {
+        $this->redisConnection->set($this->getAccountLastEventKey($accountId), (string)$eventId);
+    }
+
+    private function getAccountLastEventKey(int $accountId): string
+    {
+        return self::KEY_LAST_PROCESSED_EVENT . (string)$accountId;
+    }
+
+    public function resetLastProcessedEvent(int $accountId): void
+    {
+        $this->redisConnection->delete($this->getAccountLastEventKey($accountId));
     }
 }
