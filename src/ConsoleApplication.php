@@ -9,6 +9,7 @@ use App\Actions\CreateEvent;
 use App\Actions\GenerateEvents;
 use App\Actions\RunWorker;
 use App\Actions\ShowTail;
+use App\Components\Console\BreakSignalDetector;
 use App\Components\Console\Console;
 use App\Components\EventGenerator\EventGenerator;
 use App\Components\Queue\Queue;
@@ -20,9 +21,13 @@ class ConsoleApplication
     /** @var RedisConfig */
     private $redisConfig;
 
+    /** @var BreakSignalDetector */
+    private $breakSignalDetector;
+
     public function __construct(RedisConfig $redisConfig)
     {
         $this->redisConfig = $redisConfig;
+        $this->breakSignalDetector = new BreakSignalDetector();
     }
 
     public function run(): int
@@ -41,6 +46,8 @@ class ConsoleApplication
 
     public function runAction(string $route, array $params = []): void
     {
+        $this->breakSignalDetector->registerSignalHandler();
+
         if ($route === 'hello') {
             echo "Hello World!\n";
 
@@ -153,7 +160,7 @@ class ConsoleApplication
 
     private function getWorker(): Worker
     {
-        return new Worker($this->getQueue());
+        return new Worker($this->getQueue(), $this->breakSignalDetector);
     }
 
     private function showTail(int $limit): void

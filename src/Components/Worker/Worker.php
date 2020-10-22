@@ -2,6 +2,7 @@
 
 namespace App\Components\Worker;
 
+use App\Components\Console\BreakSignalDetector;
 use App\Components\Queue\Event;
 use App\Components\Queue\Queue;
 
@@ -12,9 +13,13 @@ class Worker
     /** @var Queue */
     private $queue;
 
-    public function __construct(Queue $queue)
+    /** @var BreakSignalDetector */
+    private $breakSignalDetector;
+
+    public function __construct(Queue $queue, BreakSignalDetector $breakSignalDetector)
     {
         $this->queue = $queue;
+        $this->breakSignalDetector = $breakSignalDetector;
     }
 
     public function processQueue(): void
@@ -26,8 +31,7 @@ class Worker
 
     private function isWorkersEnabled(): bool
     {
-        // STUB Сделать управление воркерами, чтобы корректно гасить их.
-        return true;
+        return !$this->breakSignalDetector->isTerminated();
     }
 
     private function work(): void
