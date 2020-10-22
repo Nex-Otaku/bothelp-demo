@@ -8,6 +8,7 @@ use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Actions\GenerateManyEvents;
 use App\Actions\RunWorker;
+use App\Actions\ShowTail;
 use App\Components\Console\Console;
 use App\Components\EventGenerator\EventGenerator;
 use App\Components\Queue\Queue;
@@ -82,7 +83,14 @@ class ConsoleApplication
             return;
         }
 
-        echo "Not found action: {$route}\n";
+        if ($route === 'show-tail') {
+            $limit = $this->getIntParameter($params, 0) ?? 10;
+            $this->showTail($limit);
+
+            return;
+        }
+
+        echo "Действие не найдено: {$route}\n";
     }
 
     private function listActions(): void
@@ -95,6 +103,7 @@ class ConsoleApplication
         echo "\tgenerate-many-events\n";
         echo "\tclear-events\n";
         echo "\trun-worker\n";
+        echo "\tshow-tail [limit]\n";
     }
 
     private function createEvent(): void
@@ -145,5 +154,25 @@ class ConsoleApplication
     private function getWorker(): Worker
     {
         return new Worker($this->getQueue());
+    }
+
+    private function showTail(int $limit): void
+    {
+        (new ShowTail($this->getQueue(), $limit))->execute();
+    }
+
+    private function getIntParameter(array $params, int $index): ?int
+    {
+        $value = $params[$index] ?? null;
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        if (!ctype_digit($value)) {
+            return null;
+        }
+
+        return (int)$value;
     }
 }

@@ -106,4 +106,13 @@ class RedisConnection
     {
         return $this->getClient()->llen($key);
     }
+
+    public function getListTail(string $key, int $limit): array
+    {
+        if ($limit < 1) {
+            return [];
+        }
+
+        return $this->getClient()->lrange($key, -$limit, -1);
+    }
 }

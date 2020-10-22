@@ -34,3 +34,8 @@ clear-events:
 # Запустить воркер
 run-worker:
 	./bin/app run-worker
+
+# Показать 10 последних событий
+show-tail:
+	./bin/app show-tail
+

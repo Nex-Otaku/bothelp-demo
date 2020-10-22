@@ -46,4 +46,20 @@ class Queue
     {
         $this->redisConnection->delete(self::KEY_EVENT_QUEUE);
     }
+
+    /**
+     * @param int $limit
+     * @return Event[]
+     */
+    public function peekEventsTail(int $limit): array
+    {
+        $items = $this->redisConnection->getListTail(self::KEY_EVENT_QUEUE, $limit);
+        $result = [];
+
+        foreach ($items as $item) {
+            $result []= Event::fromString($item);
+        }
+
+        return $result;
+    }
 }
