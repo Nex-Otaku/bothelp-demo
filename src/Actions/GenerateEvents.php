@@ -5,7 +5,7 @@ namespace App\Actions;
 use App\Components\EventGenerator\EventGenerator;
 use App\Components\Queue\Queue;
 
-class GenerateManyEvents
+class GenerateEvents
 {
     private const ACCOUNTS_LIMIT = 1000;
     private const EVENT_ROW_LIMIT = 10;

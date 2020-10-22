@@ -6,7 +6,7 @@ use App\Actions\CheckRedis;
 use App\Actions\ClearEvents;
 use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
-use App\Actions\GenerateManyEvents;
+use App\Actions\GenerateEvents;
 use App\Actions\RunWorker;
 use App\Actions\ShowTail;
 use App\Components\Console\Console;
@@ -65,8 +65,8 @@ class ConsoleApplication
             return;
         }
 
-        if ($route === 'generate-many-events') {
-            $this->generateManyEvents();
+        if ($route === 'generate-events') {
+            $this->generateEvents();
 
             return;
         }
@@ -131,9 +131,9 @@ class ConsoleApplication
         (new ConsumeEvent($this->getQueue()))->execute();
     }
 
-    private function generateManyEvents(): void
+    private function generateEvents(): void
     {
-        (new GenerateManyEvents($this->getEventGenerator(), $this->getQueue()))->execute();
+        (new GenerateEvents($this->getEventGenerator(), $this->getQueue()))->execute();
     }
 
     private function getEventGenerator(): EventGenerator

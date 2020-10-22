@@ -24,8 +24,8 @@ check-redis:
 
 
 # Сгенерировать 10К событий
-generate-many-events:
-	./bin/app generate-many-events
+generate-events:
+	./bin/app generate-events
 
 # Очистить очередь
 clear-events:
