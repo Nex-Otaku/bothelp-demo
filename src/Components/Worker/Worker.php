@@ -26,6 +26,9 @@ class Worker
     /** @var int */
     private $lockedAccountId = 0;
 
+    /** @var int */
+    private $lockedEventId = 0;
+
     public function __construct(Queue $queue, BreakSignalDetector $breakSignalDetector)
     {
         $this->queue = $queue;
@@ -97,28 +100,7 @@ class Worker
 
     private function canProcessEvent(Event $event): bool
     {
-        if ($this->isLockAcquired) {
-            if ($event->getAccountId() !== $this->lockedAccountId) {
-                throw new \LogicException('Чтобы взять новую блокировку, нужно освободить предыдущую');
-            }
-
-            return true;
-        }
-
-        $accountProcessingInfo = new AccountProcessingInfo(
-            $event->getAccountId(),
-            $this->getWorkerId(),
-            time()
-        );
-
-        $acquired = $this->queue->acquireAccountProcessingChannel($accountProcessingInfo);
-
-        if ($acquired) {
-            $this->isLockAcquired = true;
-            $this->lockedAccountId = $accountProcessingInfo->getAccountId();
-        }
-
-        return $acquired;
+        return $this->acquireLock($event);
     }
 
     private function processEvent(Event $event): void
@@ -150,5 +132,33 @@ class Worker
         $this->isLockAcquired = false;
         $this->queue->resetAccountLock($this->lockedAccountId);
         $this->lockedAccountId = 0;
+        $this->lockedEventId = 0;
+    }
+
+    private function acquireLock(Event $event): bool
+    {
+        if ($this->isLockAcquired) {
+            if ($event->getEventId() !== $this->lockedEventId) {
+                throw new \LogicException('Чтобы взять новую блокировку, нужно освободить предыдущую');
+            }
+
+            return true;
+        }
+
+        $accountProcessingInfo = new AccountProcessingInfo(
+            $event->getAccountId(),
+            $this->getWorkerId(),
+            time()
+        );
+
+        $acquired = $this->queue->acquireAccountProcessingChannel($accountProcessingInfo);
+
+        if ($acquired) {
+            $this->isLockAcquired = true;
+            $this->lockedAccountId = $accountProcessingInfo->getAccountId();
+            $this->lockedEventId = $event->getEventId();
+        }
+
+        return $acquired;
     }
 }
