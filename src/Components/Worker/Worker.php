@@ -7,6 +7,8 @@ use App\Components\Queue\Queue;
 
 class Worker
 {
+    private const EVENT_FETCH_LIMIT = 1500;
+
     /** @var Queue */
     private $queue;
 
@@ -30,7 +32,7 @@ class Worker
 
     private function work(): void
     {
-        $event = $this->fetchEvent();
+        $event = $this->fetchEvent(0);
 
         if ($event === null) {
             $this->log("Работы нет. Сплю секунду...");
@@ -50,7 +52,7 @@ class Worker
         $this->processEvent($event);
     }
 
-    private function fetchEvent(): ?Event
+    private function fetchEvent(int $level): ?Event
     {
         $event = $this->queue->consume();
 
@@ -58,9 +60,15 @@ class Worker
             return null;
         }
 
+        $level++;
+
+        if ($level >= self::EVENT_FETCH_LIMIT) {
+            return $event;
+        }
+
         if (!$this->canProcessEvent($event)) {
             $oldEvent = $event;
-            $event = $this->queue->consume();
+            $event = $this->fetchEvent($level);
             $this->queue->putBack($oldEvent);
         }
 
