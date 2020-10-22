@@ -3,6 +3,7 @@
 namespace App\Components\Worker;
 
 use App\Components\Console\BreakSignalDetector;
+use App\Components\Filesystem\Filesystem;
 use App\Components\Queue\AccountProcessingInfo;
 use App\Components\Queue\Event;
 use App\Components\Queue\Queue;
@@ -17,6 +18,9 @@ class Worker
     /** @var BreakSignalDetector */
     private $breakSignalDetector;
 
+    /** @var FileLog */
+    private $fileLog;
+
     /** @var string */
     private $workerId;
 
@@ -29,10 +33,15 @@ class Worker
     /** @var int */
     private $lockedEventId = 0;
 
-    public function __construct(Queue $queue, BreakSignalDetector $breakSignalDetector)
+    public function __construct(
+        Queue $queue,
+        BreakSignalDetector $breakSignalDetector,
+        FileLog $fileLog
+    )
     {
         $this->queue = $queue;
         $this->breakSignalDetector = $breakSignalDetector;
+        $this->fileLog = $fileLog;
     }
 
     public function processQueue(): void
@@ -118,7 +127,20 @@ class Worker
 
     private function log(string $message): void
     {
+        $this->logToScreen($message);
+        $this->logToFile($message);
+    }
+
+    private function logToScreen(string $message): void
+    {
         echo "{$message}\n";
+    }
+
+    private function logToFile(string $message): void
+    {
+        $time = date('Y-m-d H:i:s');
+        $workerId = $this->getWorkerId();
+        $this->fileLog->write("{$time} {$workerId} | {$message}");
     }
 
     private function getWorkerId(): string

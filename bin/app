@@ -8,7 +8,8 @@ use App\ConsoleApplication;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 try {
-    $application = new ConsoleApplication(new RedisConfig());
+    $root = dirname(__DIR__);
+    $application = new ConsoleApplication(new RedisConfig(), $root);
     $exitCode = $application->run();
 } catch (\Exception $exception) {
     echo (string)$exception . PHP_EOL;

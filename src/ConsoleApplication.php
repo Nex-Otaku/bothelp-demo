@@ -18,8 +18,10 @@ use App\Actions\ShowTail;
 use App\Components\Console\BreakSignalDetector;
 use App\Components\Console\Console;
 use App\Components\EventGenerator\EventGenerator;
+use App\Components\Filesystem\Filesystem;
 use App\Components\Queue\Queue;
 use App\Components\Redis\RedisConnection;
+use App\Components\Worker\FileLog;
 use App\Components\Worker\Worker;
 
 class ConsoleApplication
@@ -30,9 +32,13 @@ class ConsoleApplication
     /** @var BreakSignalDetector */
     private $breakSignalDetector;
 
-    public function __construct(RedisConfig $redisConfig)
+    /** @var string */
+    private $rootPath;
+
+    public function __construct(RedisConfig $redisConfig, string $rootPath)
     {
         $this->redisConfig = $redisConfig;
+        $this->rootPath = $rootPath;
         $this->breakSignalDetector = new BreakSignalDetector();
     }
 
@@ -208,7 +214,7 @@ class ConsoleApplication
 
     private function getWorker(): Worker
     {
-        return new Worker($this->getQueue(), $this->breakSignalDetector);
+        return new Worker($this->getQueue(), $this->breakSignalDetector, $this->getFileLog());
     }
 
     private function showTail(int $limit): void
@@ -259,5 +265,15 @@ class ConsoleApplication
     private function resetLastEvent(): void
     {
         (new ResetLastProcessedEvent($this->getQueue()))->execute();
+    }
+
+    private function getFileLog(): FileLog
+    {
+        return new FileLog($this->getFilesystem(), $this->rootPath);
+    }
+
+    private function getFilesystem(): Filesystem
+    {
+        return new Filesystem();
     }
 }
