@@ -67,6 +67,15 @@ class RedisConnection
         $this->getClient()->rpush($key, $values);
     }
 
+    /**
+     * @param string   $key
+     * @param string[] $values
+     */
+    public function prependToList(string $key, array $values): void
+    {
+        $this->getClient()->lpush($key, $values);
+    }
+
     private function getClient(): Client
     {
         if ($this->client === null) {
@@ -86,6 +95,11 @@ class RedisConnection
     public function popFromListTail(string $key): ?string
     {
         return $this->getClient()->rpop($key);
+    }
+
+    public function popFromListHead(string $key): ?string
+    {
+        return $this->getClient()->lpop($key);
     }
 
     public function getListLength(string $key): int

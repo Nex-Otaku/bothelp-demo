@@ -7,10 +7,12 @@ use App\Actions\ClearEvents;
 use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Actions\GenerateManyEvents;
+use App\Actions\RunWorker;
 use App\Components\Console\Console;
 use App\Components\EventGenerator\EventGenerator;
 use App\Components\Queue\Queue;
 use App\Components\Redis\RedisConnection;
+use App\Components\Worker\Worker;
 
 class ConsoleApplication
 {
@@ -74,6 +76,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'run-worker') {
+            $this->runWorker();
+
+            return;
+        }
+
         echo "Not found action: {$route}\n";
     }
 
@@ -86,6 +94,7 @@ class ConsoleApplication
         echo "\tcheck-redis\n";
         echo "\tgenerate-many-events\n";
         echo "\tclear-events\n";
+        echo "\trun-worker\n";
     }
 
     private function createEvent(): void
@@ -126,5 +135,15 @@ class ConsoleApplication
     private function clearEvents(): void
     {
         (new ClearEvents($this->getQueue()))->execute();
+    }
+
+    private function runWorker(): void
+    {
+        (new RunWorker($this->getWorker()))->execute();
+    }
+
+    private function getWorker(): Worker
+    {
+        return new Worker($this->getQueue());
     }
 }

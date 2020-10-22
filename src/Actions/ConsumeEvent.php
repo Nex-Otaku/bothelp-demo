@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Components\Queue\Event;
 use App\Components\Queue\Queue;
 
 class ConsumeEvent

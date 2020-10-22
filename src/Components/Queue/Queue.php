@@ -21,9 +21,14 @@ class Queue
         $this->redisConnection->appendToList(self::KEY_EVENT_QUEUE, [$event->toString()]);
     }
 
+    public function putBack(Event $event): void
+    {
+        $this->redisConnection->prependToList(self::KEY_EVENT_QUEUE, [$event->toString()]);
+    }
+
     public function consume(): ?Event
     {
-        $item = $this->redisConnection->popFromListTail(self::KEY_EVENT_QUEUE);
+        $item = $this->redisConnection->popFromListHead(self::KEY_EVENT_QUEUE);
 
         if (!is_string($item)) {
             return null;

@@ -31,3 +31,6 @@ generate-many-events:
 clear-events:
 	./bin/app clear-events
 
+# Запустить воркер
+run-worker:
+	./bin/app run-worker
