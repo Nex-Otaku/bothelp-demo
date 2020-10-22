@@ -7,7 +7,10 @@ use App\Actions\ClearEvents;
 use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Actions\GenerateEvents;
+use App\Actions\ReadAccountLock;
+use App\Actions\ResetAccountLock;
 use App\Actions\RunWorker;
+use App\Actions\SetAccountLock;
 use App\Actions\ShowTail;
 use App\Components\Console\BreakSignalDetector;
 use App\Components\Console\Console;
@@ -97,6 +100,24 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'read-account-lock') {
+            $this->readAccountLock();
+
+            return;
+        }
+
+        if ($route === 'set-account-lock') {
+            $this->setAccountLock();
+
+            return;
+        }
+
+        if ($route === 'reset-account-lock') {
+            $this->resetAccountLock();
+
+            return;
+        }
+
         echo "Действие не найдено: {$route}\n";
     }
 
@@ -111,6 +132,9 @@ class ConsoleApplication
         echo "\tclear-events\n";
         echo "\trun-worker\n";
         echo "\tshow-tail [limit]\n";
+        echo "\tread-account-lock\n";
+        echo "\tset-account-lock\n";
+        echo "\treset-account-lock\n";
     }
 
     private function createEvent(): void
@@ -181,5 +205,20 @@ class ConsoleApplication
         }
 
         return (int)$value;
+    }
+
+    private function readAccountLock(): void
+    {
+        (new ReadAccountLock($this->getQueue()))->execute();
+    }
+
+    private function setAccountLock(): void
+    {
+        (new SetAccountLock($this->getQueue()))->execute();
+    }
+
+    private function resetAccountLock(): void
+    {
+        (new ResetAccountLock($this->getQueue()))->execute();
     }
 }

@@ -6,7 +6,8 @@ use App\Components\Redis\RedisConnection;
 
 class Queue
 {
-    private const KEY_EVENT_QUEUE = 'event-queue';
+    private const KEY_EVENT_QUEUE        = 'event-queue';
+    private const KEY_ACCOUNT_PROCESSING = 'account-processing-';
 
     /** @var RedisConnection */
     private $redisConnection;
@@ -61,5 +62,34 @@ class Queue
         }
 
         return $result;
+    }
+
+    public function acquireAccountProcessingChannel(AccountProcessingInfo $accountProcessingInfo): bool
+    {
+        return $this->redisConnection->acquireLock(
+            $this->getAccountChannelKey($accountProcessingInfo->getAccountId()),
+            $accountProcessingInfo->toString()
+        );
+    }
+
+    public function readAccountProcessingChannel(int $accountId): ?AccountProcessingInfo
+    {
+        $lock = $this->redisConnection->readLock($this->getAccountChannelKey($accountId));
+
+        if ($lock === null) {
+            return null;
+        }
+
+        return AccountProcessingInfo::fromString($lock);
+    }
+
+    public function resetAccountLock(int $accountId): void
+    {
+        $this->redisConnection->resetLock($this->getAccountChannelKey($accountId));
+    }
+
+    private function getAccountChannelKey(int $accountId): string
+    {
+        return self::KEY_ACCOUNT_PROCESSING . (string)$accountId;
     }
 }

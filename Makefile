@@ -39,3 +39,15 @@ run-worker:
 show-tail:
 	./bin/app show-tail
 
+# Прочесть блокировку
+read-account-lock:
+	./bin/app read-account-lock
+
+# Установить блокировку
+set-account-lock:
+	./bin/app set-account-lock
+
+# Сбросить блокировку
+reset-account-lock:
+	./bin/app reset-account-lock
+

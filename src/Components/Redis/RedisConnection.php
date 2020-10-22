@@ -115,4 +115,21 @@ class RedisConnection
 
         return $this->getClient()->lrange($key, -$limit, -1);
     }
+
+    public function acquireLock(string $key, string $value): bool
+    {
+        $result = $this->getClient()->setnx($key, $value);
+
+        return $result === 1;
+    }
+
+    public function resetLock(string $key): void
+    {
+        $this->delete($key);
+    }
+
+    public function readLock(string $key): ?string
+    {
+        return $this->get($key);
+    }
 }
