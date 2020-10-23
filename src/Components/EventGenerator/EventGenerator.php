@@ -2,6 +2,7 @@
 
 namespace App\Components\EventGenerator;
 
+use App\Components\Console\BreakSignalDetector;
 use App\Components\Console\ProgressBar;
 use App\Components\Queue\Event;
 use App\Components\Queue\Queue;
@@ -23,9 +24,13 @@ class EventGenerator
     /** @var Queue */
     private $queue;
 
-    public function __construct(Queue $queue)
+    /** @var BreakSignalDetector */
+    private $breakSignalDetector;
+
+    public function __construct(Queue $queue, BreakSignalDetector $breakSignalDetector)
     {
         $this->queue = $queue;
+        $this->breakSignalDetector = $breakSignalDetector;
     }
 
     public function generate(int $accountLimit, int $eventRowLimit): void
@@ -63,6 +68,10 @@ class EventGenerator
             if ($sleep) {
                 $this->sleep();
             }
+
+            if ($this->breakSignalDetector->isTerminated()) {
+                break;
+            }
         }
 
         echo "\n";
@@ -98,6 +107,10 @@ class EventGenerator
             $this->generatedCount++;
             $this->queue->add(new Event($this->generatedCount, $accountId));
             $this->updateProgressBar();
+
+            if ($this->breakSignalDetector->isTerminated()) {
+                break;
+            }
         }
     }
 }

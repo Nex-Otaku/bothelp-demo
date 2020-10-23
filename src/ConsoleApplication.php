@@ -212,7 +212,7 @@ class ConsoleApplication
 
     private function getEventGenerator(): EventGenerator
     {
-        return new EventGenerator($this->getQueue());
+        return new EventGenerator($this->getQueue(), $this->breakSignalDetector);
     }
 
     private function clearEvents(): void
