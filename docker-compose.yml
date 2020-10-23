@@ -13,7 +13,6 @@ services:
       - SYS_TIME
     tty: true
   worker:
-    container_name: bothelp_demo_worker
     image: bothelp_demo_app
     volumes:
       - ./logs:/opt/app/logs

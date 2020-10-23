@@ -85,3 +85,5 @@ generator-tail:
 	docker exec -it bothelp_demo_event_generator make show-tail
 
 
+up:
+	docker-compose up --scale worker=15
