@@ -5,8 +5,12 @@
 ## Запуск
 
   1. Склонировать репозиторий
+  ```
+git clone https://github.com/Nex-Otaku/bothelp-demo.git
+```
   2. Запустить проект
   ```
+cd bothelp-demo
 make up
 ```
 
