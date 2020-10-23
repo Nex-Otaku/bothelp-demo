@@ -8,7 +8,7 @@ install:
 	composer install
 	chmod +x ./bin/app
 
-# Сгенерировать 10К событий
+# Сгенерировать 10К событий (по 10 событий в секунду)
 generate-events:
 	./bin/app generate-events
 
@@ -21,6 +21,10 @@ run-worker:
 	./bin/app run-worker
 
 # --------------------------------------------
+
+# Сгенерировать 10К событий без задержек
+generate-events-pack:
+	./bin/app generate-events-pack
 
 # Проверить Redis
 check-redis:
@@ -66,4 +70,8 @@ set-last-event:
 # Сбросить ID последнего события
 reset-last-event:
 	./bin/app reset-last-event
+
+# -------------------------
+# Docker
+# -------------------------
 

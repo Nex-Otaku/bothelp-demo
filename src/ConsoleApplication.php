@@ -7,6 +7,7 @@ use App\Actions\ClearEvents;
 use App\Actions\ConsumeEvent;
 use App\Actions\CreateEvent;
 use App\Actions\GenerateEvents;
+use App\Actions\GenerateEventsPack;
 use App\Actions\ReadAccountLock;
 use App\Actions\ReadLastProcessedEvent;
 use App\Actions\ResetAccountLock;
@@ -90,6 +91,12 @@ class ConsoleApplication
             return;
         }
 
+        if ($route === 'generate-events-pack') {
+            $this->generateEventsPack();
+
+            return;
+        }
+
         if ($route === 'clear-events') {
             $this->clearEvents();
 
@@ -155,7 +162,8 @@ class ConsoleApplication
         echo "\tcreate-event\n";
         echo "\tconsume-event\n";
         echo "\tcheck-redis\n";
-        echo "\tgenerate-many-events\n";
+        echo "\tgenerate-events\n";
+        echo "\tgenerate-events-pack\n";
         echo "\tclear-events\n";
         echo "\trun-worker\n";
         echo "\tshow-tail [limit]\n";
@@ -195,6 +203,11 @@ class ConsoleApplication
     private function generateEvents(): void
     {
         (new GenerateEvents($this->getEventGenerator(), $this->getQueue()))->execute();
+    }
+
+    private function generateEventsPack(): void
+    {
+        (new GenerateEventsPack($this->getEventGenerator(), $this->getQueue()))->execute();
     }
 
     private function getEventGenerator(): EventGenerator

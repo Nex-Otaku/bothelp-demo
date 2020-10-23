@@ -8,7 +8,17 @@ use App\Components\Queue\Queue;
 
 class EventGenerator
 {
+    /** @var int */
     private $generatedCount = 0;
+
+    /** @var ProgressBar */
+    private $progressBar;
+
+    /** @var int */
+    private $accountLimit = 0;
+
+    /** @var int */
+    private $eventRowLimit = 0;
 
     /** @var Queue */
     private $queue;
@@ -20,28 +30,74 @@ class EventGenerator
 
     public function generate(int $accountLimit, int $eventRowLimit): void
     {
-        $total = $accountLimit * $eventRowLimit;
+        $this->accountLimit = $accountLimit;
+        $this->eventRowLimit = $eventRowLimit;
+        $this->generateEvents(true);
+    }
 
-        if ($total < 1) {
+    public function generatePack(int $accountLimit, int $eventRowLimit): void
+    {
+        $this->accountLimit = $accountLimit;
+        $this->eventRowLimit = $eventRowLimit;
+        $this->generateEvents(false);
+    }
+
+    public function getGeneratedCount(): int
+    {
+        return $this->generatedCount;
+    }
+
+    private function generateEvents(bool $sleep): void
+    {
+        $this->generatedCount = 0;
+
+        if ($this->getTotal() < 1) {
             return;
         }
 
-        $progressBar = new ProgressBar('Создаём события:');
-        $progressBar->showProgress(0, $total);
+        $this->updateProgressBar();
 
-        for ($accountId = 1; $accountId <= $accountLimit; $accountId++) {
-            for ($eventIterator = 0; $eventIterator < $eventRowLimit; $eventIterator++) {
-                $this->generatedCount++;
-                $this->queue->add(new Event($this->generatedCount, $accountId));
-                $progressBar->showProgress($this->generatedCount, $total);
+        for ($accountId = 1; $accountId <= $this->accountLimit; $accountId++) {
+            $this->generateForAccount($accountId);
+
+            if ($sleep) {
+                $this->sleep();
             }
         }
 
         echo "\n";
     }
 
-    public function getGeneratedCount(): int
+    private function sleep(): void
     {
-        return $this->generatedCount;
+        sleep(1);
+    }
+
+    private function getTotal(): int
+    {
+        return $this->accountLimit * $this->eventRowLimit;
+    }
+
+    private function updateProgressBar(): void
+    {
+        $this->getProgressBar()->showProgress($this->generatedCount, $this->getTotal());
+    }
+
+    private function getProgressBar(): ProgressBar
+    {
+        if ($this->progressBar === null) {
+            $this->progressBar = new ProgressBar('Создаём события:');
+        }
+
+        return $this->progressBar;
+    }
+
+    private function generateForAccount(int $accountId): void
+    {
+        for ($eventIterator = 0; $eventIterator < $this->eventRowLimit; $eventIterator++) {
+            $this->generatedCount++;
+            $this->queue->add(new Event($this->generatedCount, $accountId));
+            $this->updateProgressBar();
+        }
     }
 }
