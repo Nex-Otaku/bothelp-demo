@@ -75,3 +75,13 @@ reset-last-event:
 # Docker
 # -------------------------
 
+build-generator:
+	docker build -t test_generator_image -f ./docker/event_generator/Dockerfile .
+
+generator-bash:
+	docker run -it --rm test_generator_image bash
+
+generator-tail:
+	docker exec -it bothelp_demo_event_generator make show-tail
+
+

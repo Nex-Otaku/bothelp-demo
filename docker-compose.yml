@@ -1,0 +1,20 @@
+version: "3.5"
+services:
+  event_generator:
+    container_name: bothelp_demo_event_generator
+    image: bothelp_demo_event_generator
+    build:
+      context: ./
+      dockerfile: ./docker/event_generator/Dockerfile
+    depends_on:
+      - redis
+    cap_add:
+      - SYS_TIME
+    tty: true
+  redis:
+    container_name: bothelp_demo_redis
+    ports:
+      - "6500:6379"
+    expose:
+      - 6379
+    image: redis:alpine

@@ -4,7 +4,7 @@ namespace App;
 
 class RedisConfig
 {
-    public $host = 'localhost';
+    public $host = 'bothelp_demo_redis';
 
     public $port = 6379;
 
