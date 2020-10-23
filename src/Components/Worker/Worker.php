@@ -3,7 +3,6 @@
 namespace App\Components\Worker;
 
 use App\Components\Console\BreakSignalDetector;
-use App\Components\Filesystem\Filesystem;
 use App\Components\Queue\AccountProcessingInfo;
 use App\Components\Queue\Event;
 use App\Components\Queue\Queue;
@@ -116,7 +115,15 @@ class Worker
             return false;
         }
 
-        return $event->getEventId() > $this->getLastProcessedEventId($event->getAccountId());
+        $isCorrectOrder = $event->getEventId() > $this->getLastProcessedEventId($event->getAccountId());
+
+        if (!$isCorrectOrder) {
+            $this->releaseLock();
+
+            return false;
+        }
+
+        return true;
     }
 
     private function processEvent(Event $event): void
