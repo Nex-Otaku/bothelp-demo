@@ -6,4 +6,4 @@ WORKDIR /opt/app
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 RUN make install
-CMD [ "./bin/app", "generate-events" ]
+CMD [ "./bin/app", "hello" ]

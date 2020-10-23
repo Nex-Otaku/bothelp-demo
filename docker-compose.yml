@@ -2,10 +2,22 @@ version: "3.5"
 services:
   event_generator:
     container_name: bothelp_demo_event_generator
-    image: bothelp_demo_event_generator
+    image: bothelp_demo_app
     build:
-      context: ./
-      dockerfile: ./docker/event_generator/Dockerfile
+      context: .
+      dockerfile: ./docker/Dockerfile
+    command: ./bin/app generate-events
+    depends_on:
+      - redis
+    cap_add:
+      - SYS_TIME
+    tty: true
+  worker:
+    container_name: bothelp_demo_worker
+    image: bothelp_demo_app
+    volumes:
+      - ./logs:/opt/app/logs
+    command: ./bin/app run-worker
     depends_on:
       - redis
     cap_add:
