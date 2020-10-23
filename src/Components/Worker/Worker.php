@@ -9,7 +9,7 @@ use App\Components\Queue\Queue;
 
 class Worker
 {
-    private const EVENT_FETCH_LIMIT = 1500;
+    private const EVENT_FETCH_LIMIT = 150;
 
     /** @var Queue */
     private $queue;
@@ -28,9 +28,6 @@ class Worker
 
     /** @var int */
     private $lockedAccountId = 0;
-
-    /** @var int */
-    private $lockedEventId = 0;
 
     public function __construct(
         Queue $queue,
@@ -57,18 +54,20 @@ class Worker
 
     private function work(): void
     {
-        $event = $this->fetchEvent(0);
+        $accountId = $this->acquireAccountLock();
 
-        if ($event === null) {
+        if ($accountId === null) {
             $this->log("Работы нет. Сплю секунду...");
             $this->sleep();
 
             return;
         }
 
-        if (!$this->canProcessEvent($event)) {
-            $this->queue->putBack($event);
-            $this->log('Событие занято. Жду секунду...');
+        $event = $this->fetchEventForAccount($accountId);
+
+        if ($event === null) {
+            $this->releaseAccountLock();
+            $this->log("Не удалось получить событие для обработки. Сплю секунду...");
             $this->sleep();
 
             return;
@@ -76,30 +75,7 @@ class Worker
 
         $this->setLastProcessedEventId($event);
         $this->processEvent($event);
-        $this->releaseLock();
-    }
-
-    private function fetchEvent(int $level): ?Event
-    {
-        $event = $this->queue->consume();
-
-        if ($event === null) {
-            return null;
-        }
-
-        $level++;
-
-        if ($level >= self::EVENT_FETCH_LIMIT) {
-            return $event;
-        }
-
-        if (!$this->canProcessEvent($event)) {
-            $oldEvent = $event;
-            $event = $this->fetchEvent($level);
-            $this->queue->putBack($oldEvent);
-        }
-
-        return $event;
+        $this->releaseAccountLock();
     }
 
     private function sleep(): void
@@ -109,21 +85,7 @@ class Worker
 
     private function canProcessEvent(Event $event): bool
     {
-        $acquired = $this->acquireLock($event);
-
-        if (!$acquired) {
-            return false;
-        }
-
-        $isCorrectOrder = $event->getEventId() > $this->getLastProcessedEventId($event->getAccountId());
-
-        if (!$isCorrectOrder) {
-            $this->releaseLock();
-
-            return false;
-        }
-
-        return true;
+        return $event->getEventId() > $this->getLastProcessedEventId($event->getAccountId());
     }
 
     private function processEvent(Event $event): void
@@ -159,7 +121,7 @@ class Worker
         return $this->workerId;
     }
 
-    private function releaseLock(): void
+    private function releaseAccountLock(): void
     {
         if (!$this->isLockAcquired) {
             return;
@@ -168,21 +130,16 @@ class Worker
         $this->isLockAcquired = false;
         $this->queue->resetAccountLock($this->lockedAccountId);
         $this->lockedAccountId = 0;
-        $this->lockedEventId = 0;
     }
 
-    private function acquireLock(Event $event): bool
+    private function acquireLock(int $accountId): bool
     {
         if ($this->isLockAcquired) {
-            if ($event->getEventId() !== $this->lockedEventId) {
-                throw new \LogicException('Чтобы взять новую блокировку, нужно освободить предыдущую');
-            }
-
-            return true;
+            throw new \LogicException('Чтобы взять новую блокировку, нужно освободить предыдущую');
         }
 
         $accountProcessingInfo = new AccountProcessingInfo(
-            $event->getAccountId(),
+            $accountId,
             $this->getWorkerId(),
             time()
         );
@@ -192,7 +149,6 @@ class Worker
         if ($acquired) {
             $this->isLockAcquired = true;
             $this->lockedAccountId = $accountProcessingInfo->getAccountId();
-            $this->lockedEventId = $event->getEventId();
         }
 
         return $acquired;
@@ -206,5 +162,69 @@ class Worker
     private function setLastProcessedEventId(Event $event)
     {
         $this->queue->setLastProcessedEventId($event->getAccountId(), $event->getEventId());
+    }
+
+    private function acquireAccountLock():? int
+    {
+        $accountIds = $this->searchAccountIds();
+
+        foreach ($accountIds as $accountId) {
+            if ($this->acquireLock($accountId)) {
+                return $accountId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return int[]
+     */
+    private function searchAccountIds(): array
+    {
+        $events = $this->queue->peekEventsHead(self::EVENT_FETCH_LIMIT);
+        $accountIds = [];
+
+        foreach ($events as $event) {
+            $accountIds []= $event->getAccountId();
+        }
+
+        return $accountIds;
+    }
+
+    private function fetchEventForAccount(int $accountId): ?Event
+    {
+        $event = $this->searchEventForAccount($accountId);
+
+        if ($event === null) {
+            return null;
+        }
+
+        if (!$this->canProcessEvent($event)) {
+            return null;
+        }
+
+        $removed = $this->queue->removeEvent($event);
+
+        if (!$removed) {
+            return null;
+        }
+
+        return $event;
+    }
+
+    private function searchEventForAccount(int $accountId): ?Event
+    {
+        $events = $this->queue->peekEventsHead(self::EVENT_FETCH_LIMIT);
+
+        foreach ($events as $event) {
+            if ($event->getAccountId() !== $accountId) {
+                continue;
+            }
+
+            return $event;
+        }
+
+        return null;
     }
 }

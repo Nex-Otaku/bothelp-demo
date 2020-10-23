@@ -3,6 +3,7 @@
 namespace App\Components\Redis;
 
 use App\RedisConfig;
+use http\Exception\RuntimeException;
 use Predis\Client;
 
 class RedisConnection
@@ -107,6 +108,15 @@ class RedisConnection
         return $this->getClient()->llen($key);
     }
 
+    public function getListHead(string $key, int $limit): array
+    {
+        if ($limit < 1) {
+            return [];
+        }
+
+        return $this->getClient()->lrange($key, 0, $limit - 1);
+    }
+
     public function getListTail(string $key, int $limit): array
     {
         if ($limit < 1) {
@@ -131,5 +141,12 @@ class RedisConnection
     public function readLock(string $key): ?string
     {
         return $this->get($key);
+    }
+
+    public function removeFromList(string $key, string $value): bool
+    {
+        $result = $this->getClient()->lrem($key, 0, $value);
+
+        return $result > 0;
     }
 }

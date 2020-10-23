@@ -53,16 +53,22 @@ class Queue
      * @param int $limit
      * @return Event[]
      */
+    public function peekEventsHead(int $limit): array
+    {
+        $items = $this->redisConnection->getListHead(self::KEY_EVENT_QUEUE, $limit);
+
+        return $this->extractEvents($items);
+    }
+
+    /**
+     * @param int $limit
+     * @return Event[]
+     */
     public function peekEventsTail(int $limit): array
     {
         $items = $this->redisConnection->getListTail(self::KEY_EVENT_QUEUE, $limit);
-        $result = [];
 
-        foreach ($items as $item) {
-            $result []= Event::fromString($item);
-        }
-
-        return $result;
+        return $this->extractEvents($items);
     }
 
     public function acquireAccountProcessingChannel(AccountProcessingInfo $accountProcessingInfo): bool
@@ -127,5 +133,25 @@ class Queue
     public function resetLastProcessedEvent(int $accountId): void
     {
         $this->redisConnection->delete($this->getAccountLastEventKey($accountId));
+    }
+
+    /**
+     * @param string[] $items
+     * @return Event[]
+     */
+    private function extractEvents(array $items): array
+    {
+        $result = [];
+
+        foreach ($items as $item) {
+            $result []= Event::fromString($item);
+        }
+
+        return $result;
+    }
+
+    public function removeEvent(Event $event): bool
+    {
+        return $this->redisConnection->removeFromList(self::KEY_EVENT_QUEUE, $event->toString());
     }
 }

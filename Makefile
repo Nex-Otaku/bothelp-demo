@@ -87,3 +87,9 @@ generator-tail:
 
 up:
 	docker-compose up --scale worker=15
+
+build:
+	docker-compose build
+
+down:
+	docker-compose down --remove-orphans
