@@ -11,6 +11,7 @@ git clone https://github.com/Nex-Otaku/bothelp-demo.git
   2. Запустить проект
   ```
 cd bothelp-demo
+make build
 make up
 ```
 
